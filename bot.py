@@ -77,15 +77,15 @@ async def vip(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     user_id = int(context.args[0])
 
- invite = await context.bot.create_chat_invite_link(
-    chat_id=VIP_CHANNEL,
-    member_limit=1
-)
+    invite = await context.bot.create_chat_invite_link(
+        chat_id=VIP_CHANNEL,
+        member_limit=1
+    )
 
-await context.bot.send_message(
-    chat_id=user_id,
-    text=f"💎 VIP erişiminiz açıldı!\n\nLink:\n{invite.invite_link}"
-)
+    await context.bot.send_message(
+        chat_id=user_id,
+        text=f"💎 VIP erişiminiz açıldı!\n\nLink:\n{invite.invite_link}"
+    )
 
     data = load_data()
 
@@ -115,7 +115,7 @@ async def premium(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await context.bot.send_message(
         chat_id=user_id,
-        text=f"👑 PREMIUM erişiminiz açıldı!\n\nLink:\n{invite.invite_link}
+        text=f"👑 PREMIUM erişiminiz açıldı!\n\nLink:\n{invite.invite_link}"
     )
 
     data = load_data()
