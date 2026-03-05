@@ -70,7 +70,7 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 # --------- VIP ONAY ---------
 
-async def vip(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def onayvip(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     if update.effective_user.id != ADMIN_ID:
         return
@@ -101,7 +101,7 @@ async def vip(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 # --------- PREMIUM ONAY ---------
 
-async def premium(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def onaypremium(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     if update.effective_user.id != ADMIN_ID:
         return
@@ -182,38 +182,17 @@ async def kontrol(context: ContextTypes.DEFAULT_TYPE):
     if degisti:
         save_data(data)
 
-# ----------------- BOT -----------------
 
-async def onayvip(update, context):
-    user_id = int(context.args[0])
+# --------- BOT ---------
 
-    link = "https://t.me/+4a3qfvsmvPs4OTNk"
-
-    await context.bot.send_message(
-        chat_id=user_id,
-        text=f"VIP grubuna katılmak için link:\n{link}"
-    )
-
-    await update.message.reply_text("VIP kullanıcıya link gönderildi.")
-
-
-async def onaypremium(update, context):
-    user_id = int(context.args[0])
-
-    link = "https://t.me/+KoU9u0vN4XBlZTRk"
-
-    await context.bot.send_message(
-        chat_id=user_id,
-        text=f"Premium grubuna katılmak için link:\n{link}"
-    )
-
-    await update.message.reply_text("Premium kullanıcıya link gönderildi.")
-    app = Application.builder().token(TOKEN).build()
+app = ApplicationBuilder().token(TOKEN).build()
 
 app.add_handler(CommandHandler("start", start))
-app.add_handler(CommandHandler("onay", onay))
 app.add_handler(CommandHandler("onayvip", onayvip))
 app.add_handler(CommandHandler("onaypremium", onaypremium))
 app.add_handler(CallbackQueryHandler(button))
+
+job_queue = app.job_queue
+job_queue.run_repeating(kontrol, interval=3600, first=10)
 
 app.run_polling()
