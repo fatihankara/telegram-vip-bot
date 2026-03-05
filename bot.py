@@ -84,7 +84,7 @@ async def vip(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await context.bot.send_message(
         chat_id=user_id,
-        text=f"💎 VIP erişiminiz açıldı!\n\nLink:\n{invite.invite_link}"
+        text=f"💎 VIP erişiminiz açıldı!\n\nLink:\nhttps://t.me/+4a3qfvsmvPs4OTNk"
     )
 
     data = load_data()
@@ -115,7 +115,7 @@ async def premium(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await context.bot.send_message(
         chat_id=user_id,
-        text=f"👑 PREMIUM erişiminiz açıldı!\n\nLink:\n{invite.invite_link}"
+        text=f"👑 PREMIUM erişiminiz açıldı!\n\nLink:\nhttps://t.me/+KoU9u0vN4XBlZTRk"
     )
 
     data = load_data()
