@@ -118,8 +118,9 @@ app.add_handler(CommandHandler("start", start))
 app.add_handler(CommandHandler("onay", onay))
 app.add_handler(CallbackQueryHandler(button))
 
-# her 1 saat kontrol et
-app.job_queue.run_repeating(kontrol, interval=3600, first=10)
+job_queue = app.job_queue
+if job_queue:
+    job_queue.run_repeating(kontrol, interval=3600, first=10)
 
 if __name__ == "__main__":
     app.run_polling()
