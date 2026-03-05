@@ -184,6 +184,9 @@ async def kontrol(context: ContextTypes.DEFAULT_TYPE):
 
 # ----------------- BOT -----------------
 
+async def onay(update, context):
+    await update.message.reply_text("Kullanıcı onaylandı.")
+
 app = ApplicationBuilder().token(TOKEN).build()
 
 app.add_handler(CommandHandler("start", start))
