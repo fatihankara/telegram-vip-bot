@@ -192,7 +192,4 @@ app.add_handler(CommandHandler("onayvip", onayvip))
 app.add_handler(CommandHandler("onaypremium", onaypremium))
 app.add_handler(CallbackQueryHandler(button))
 
-job_queue = app.job_queue
-job_queue.run_repeating(kontrol, interval=3600, first=10)
-
 app.run_polling()
