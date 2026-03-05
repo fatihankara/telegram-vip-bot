@@ -1,4 +1,5 @@
 import logging
+import asyncio
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 
@@ -21,5 +22,5 @@ async def main():
 
     await app.run_polling()
 
-import asyncio
-asyncio.run(main())
+if _name_ == "_main_":
+    asyncio.run(main()
