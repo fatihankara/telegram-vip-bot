@@ -184,18 +184,36 @@ async def kontrol(context: ContextTypes.DEFAULT_TYPE):
 
 # ----------------- BOT -----------------
 
-async def onay(update, context):
-    await update.message.reply_text("Kullanıcı onaylandı.")
+async def onayvip(update, context):
+    user_id = int(context.args[0])
 
-app = ApplicationBuilder().token(TOKEN).build()
+    link = "https://t.me/+4a3qfvsmvPs4OTNk"
+
+    await context.bot.send_message(
+        chat_id=user_id,
+        text=f"VIP grubuna katılmak için link:\n{link}"
+    )
+
+    await update.message.reply_text("VIP kullanıcıya link gönderildi.")
+
+
+async def onaypremium(update, context):
+    user_id = int(context.args[0])
+
+    link = "https://t.me/+KoU9u0vN4XBlZTRk"
+
+    await context.bot.send_message(
+        chat_id=user_id,
+        text=f"Premium grubuna katılmak için link:\n{link}"
+    )
+
+    await update.message.reply_text("Premium kullanıcıya link gönderildi.")
+    app = Application.builder().token(TOKEN).build()
 
 app.add_handler(CommandHandler("start", start))
 app.add_handler(CommandHandler("onay", onay))
+app.add_handler(CommandHandler("onayvip", onayvip))
+app.add_handler(CommandHandler("onaypremium", onaypremium))
 app.add_handler(CallbackQueryHandler(button))
 
-job_queue = app.job_queue
-if job_queue:
-    job_queue.run_repeating(kontrol, interval=3600, first=10)
-
-if __name__ == "__main__":
-    app.run_polling()
+app.run_polling()
