@@ -121,4 +121,5 @@ app.add_handler(CallbackQueryHandler(button))
 # her 1 saat kontrol et
 app.job_queue.run_repeating(kontrol, interval=3600, first=10)
 
-app.run_polling()
+if __name__ == "__main__":
+    app.run_polling()
