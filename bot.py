@@ -180,7 +180,7 @@ async def kontrol(context: ContextTypes.DEFAULT_TYPE):
             degisti = True
 
     if degisti:
-        save_data(data
+        save_data(data)
 
 # ----------------- BOT -----------------
 
