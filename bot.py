@@ -1,25 +1,31 @@
 from flask import Flask
 import threading
+import time
+import json
+import os
 
-app = Flask(__name__)
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandler, ContextTypes
 
-@app.route('/')
+# --------- FLASK (Render için botu canlı tutar) ---------
+
+web = Flask(_name_)
+
+@web.route('/')
 def home():
     return "Bot çalışıyor"
 
 def run():
-    app.run(host="0.0.0.0", port=10000)
+    web.run(host="0.0.0.0", port=10000)
 
 def keep_alive():
     t = threading.Thread(target=run)
     t.start()
 
 keep_alive()
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandler, ContextTypes
-import time
-import json
-import os
+
+
+# --------- TELEGRAM AYAR ---------
 
 TOKEN = "8782987338:AAF4QQsH9pwk5_d1F0sLBzHyPrJBXOQsfGw"
 
@@ -51,13 +57,9 @@ def save_data(data):
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     keyboard = [
-
         [InlineKeyboardButton("💎 VIP Üyelik (500 TL)", url="https://www.shopier.com/beybinurvip/44857425")],
-
         [InlineKeyboardButton("👑 PREMIUM Üyelik (2000 TL)", url="https://www.shopier.com/beybinurvip/44890199")],
-
         [InlineKeyboardButton("✅ Ödeme Yaptım", callback_data="odeme")]
-
     ]
 
     reply_markup = InlineKeyboardMarkup(keyboard)
@@ -152,7 +154,6 @@ async def onaypremium(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def kontrol(context: ContextTypes.DEFAULT_TYPE):
 
     data = load_data()
-
     simdi = int(time.time())
 
     degisti = False
@@ -174,11 +175,8 @@ async def kontrol(context: ContextTypes.DEFAULT_TYPE):
                     await context.bot.unban_chat_member(PREMIUM_CHANNEL, int(user_id))
 
                 keyboard = [
-
                     [InlineKeyboardButton("💎 VIP Yenile", url="VIP_LINK")],
-
                     [InlineKeyboardButton("👑 PREMIUM Yenile", url="PREMIUM_LINK")]
-
                 ]
 
                 reply_markup = InlineKeyboardMarkup(keyboard)
@@ -193,20 +191,19 @@ async def kontrol(context: ContextTypes.DEFAULT_TYPE):
                 pass
 
             del data[user_id]
-
             degisti = True
 
     if degisti:
         save_data(data)
 
 
-# --------- BOT ---------
+# --------- BOT BAŞLAT ---------
 
-app = ApplicationBuilder().token(TOKEN).build()
+bot = ApplicationBuilder().token(TOKEN).build()
 
-app.add_handler(CommandHandler("start", start))
-app.add_handler(CommandHandler("onayvip", onayvip))
-app.add_handler(CommandHandler("onaypremium", onaypremium))
-app.add_handler(CallbackQueryHandler(button))
+bot.add_handler(CommandHandler("start", start))
+bot.add_handler(CommandHandler("onayvip", onayvip))
+bot.add_handler(CommandHandler("onaypremium", onaypremium))
+bot.add_handler(CallbackQueryHandler(button))
 
-app.run_polling()
+bot.run_polling()
