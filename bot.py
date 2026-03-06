@@ -1,3 +1,20 @@
+from flask import Flask
+import threading
+
+app = Flask(_name_)
+
+@app.route('/')
+def home():
+    return "Bot çalışıyor"
+
+def run():
+    app.run(host="0.0.0.0", port=10000)
+
+def keep_alive():
+    t = threading.Thread(target=run)
+    t.start()
+
+keep_alive()
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandler, ContextTypes
 import time
