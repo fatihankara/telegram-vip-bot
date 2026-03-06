@@ -9,7 +9,7 @@ from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandle
 
 # --------- FLASK (Render için botu canlı tutar) ---------
 
-web = Flask(_name_)
+web = Flask(__name__)
 
 @web.route('/')
 def home():
