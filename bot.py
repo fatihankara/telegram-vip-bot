@@ -3,6 +3,7 @@ import threading
 import time
 import json
 import os
+import asyncio
 
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandler, ContextTypes
@@ -151,59 +152,70 @@ async def onaypremium(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 # --------- SÜRE KONTROL ---------
 
-async def kontrol(context: ContextTypes.DEFAULT_TYPE):
+async def kontrol(application):
 
-    data = load_data()
-    simdi = int(time.time())
+    while True:
 
-    degisti = False
+        data = load_data()
+        simdi = int(time.time())
+        degisti = False
 
-    for user_id in list(data.keys()):
+        for user_id in list(data.keys()):
 
-        if simdi > data[user_id]["bitis"]:
+            if simdi > data[user_id]["bitis"]:
 
-            kanal = data[user_id]["kanal"]
+                kanal = data[user_id]["kanal"]
 
-            try:
+                try:
 
-                if kanal == "vip":
-                    await context.bot.ban_chat_member(VIP_CHANNEL, int(user_id))
-                    await context.bot.unban_chat_member(VIP_CHANNEL, int(user_id))
+                    if kanal == "vip":
+                        await application.bot.ban_chat_member(VIP_CHANNEL, int(user_id))
+                        await application.bot.unban_chat_member(VIP_CHANNEL, int(user_id))
 
-                if kanal == "premium":
-                    await context.bot.ban_chat_member(PREMIUM_CHANNEL, int(user_id))
-                    await context.bot.unban_chat_member(PREMIUM_CHANNEL, int(user_id))
+                    if kanal == "premium":
+                        await application.bot.ban_chat_member(PREMIUM_CHANNEL, int(user_id))
+                        await application.bot.unban_chat_member(PREMIUM_CHANNEL, int(user_id))
 
-                keyboard = [
-                    [InlineKeyboardButton("💎 VIP Yenile", url="VIP_LINK")],
-                    [InlineKeyboardButton("👑 PREMIUM Yenile", url="PREMIUM_LINK")]
-                ]
+                    keyboard = [
+                        [InlineKeyboardButton("💎 VIP Yenile", url="VIP_LINK")],
+                        [InlineKeyboardButton("👑 PREMIUM Yenile", url="PREMIUM_LINK")]
+                    ]
 
-                reply_markup = InlineKeyboardMarkup(keyboard)
+                    reply_markup = InlineKeyboardMarkup(keyboard)
 
-                await context.bot.send_message(
-                    chat_id=int(user_id),
-                    text="❌ Üyeliğinizin süresi doldu.\n\nYenilemek için ödeme yapabilirsiniz.",
-                    reply_markup=reply_markup
-                )
+                    await application.bot.send_message(
+                        chat_id=int(user_id),
+                        text="❌ Üyeliğinizin süresi doldu.\n\nYenilemek için ödeme yapabilirsiniz.",
+                        reply_markup=reply_markup
+                    )
 
-            except:
-                pass
+                except:
+                    pass
 
-            del data[user_id]
-            degisti = True
+                del data[user_id]
+                degisti = True
 
-    if degisti:
-        save_data(data)
+        if degisti:
+            save_data(data)
+
+        await asyncio.sleep(3600)
 
 
 # --------- BOT BAŞLAT ---------
 
-bot = ApplicationBuilder().token(TOKEN).build()
+async def main():
 
-bot.add_handler(CommandHandler("start", start))
-bot.add_handler(CommandHandler("onayvip", onayvip))
-bot.add_handler(CommandHandler("onaypremium", onaypremium))
-bot.add_handler(CallbackQueryHandler(button))
+    app = ApplicationBuilder().token(TOKEN).build()
 
-bot.run_polling()
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(CommandHandler("onayvip", onayvip))
+    app.add_handler(CommandHandler("onaypremium", onaypremium))
+    app.add_handler(CallbackQueryHandler(button))
+
+    asyncio.create_task(kontrol(app))
+
+    await app.run_polling()
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
