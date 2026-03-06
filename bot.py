@@ -1,6 +1,5 @@
 from flask import Flask
 import threading
-import imghdr
 
 app = Flask(__name__)
 
