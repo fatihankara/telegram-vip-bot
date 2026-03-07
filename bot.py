@@ -203,23 +203,19 @@ async def kontrol(application):
 
 # --------- BOT BAŞLAT ---------
 
-async def main():
-
+def main():
+    # Uygulamayı oluştur
     app = ApplicationBuilder().token(TOKEN).build()
-
+    
+    # Komutları ekle
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("onayvip", onayvip))
     app.add_handler(CommandHandler("onaypremium", onaypremium))
     app.add_handler(CallbackQueryHandler(button))
 
-    asyncio.create_task(kontrol(app))
+    # Botu başlat (Polling modunda en güvenli yol budur)
+    print("Bot başarıyla başlatıldı...")
+    app.run_polling()
 
-    await app.run_polling()
-
-
-if __name__ == "__main__":
-    import asyncio
-    try:
-        asyncio.run(main())
-    except (KeyboardInterrupt, SystemExit):
-        pass
+if _name_ == "_main_":
+    main()
