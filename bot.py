@@ -149,7 +149,35 @@ async def onaypremium(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     await update.message.reply_text("PREMIUM kullanıcı eklendi.")
 
+# --------- REDDETME İŞLEMLERİ ---------
 
+async def redvip(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if update.effective_user.id != ADMIN_ID:
+        return
+
+    try:
+        user_id = int(context.args[0])
+        await context.bot.send_message(
+            chat_id=user_id,
+            text="❌ *Ödemeniz Onaylanmadı*\n\nSistemde geçerli bir ödeme kaydı bulunamadı. Lütfen işlemi tamamladığınızdan emin olun."
+        )
+        await update.message.reply_text(f"🚫 {user_id} ID'li kullanıcının VIP talebi reddedildi.")
+    except (IndexError, ValueError):
+        await update.message.reply_text("Kullanım: /redvip [user_id]")
+
+async def redpremium(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if update.effective_user.id != ADMIN_ID:
+        return
+
+    try:
+        user_id = int(context.args[0])
+        await context.bot.send_message(
+            chat_id=user_id,
+            text="❌ *Ödemeniz Onaylanmadı*\n\nPremium üyelik bildiriminiz reddedildi. Lütfen bilgilerinizi kontrol edin."
+        )
+        await update.message.reply_text(f"🚫 {user_id} ID'li kullanıcının Premium talebi reddedildi.")
+    except (IndexError, ValueError):
+        await update.message.reply_text("Kullanım: /redpremium [user_id]")
 # --------- SÜRE KONTROL ---------
 
 async def kontrol(application):
