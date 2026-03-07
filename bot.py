@@ -217,5 +217,4 @@ def main():
     print("Bot başarıyla başlatıldı...")
     app.run_polling()
 
-if __name__ == "__main__":
-    main()
+main()
