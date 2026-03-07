@@ -240,7 +240,8 @@ def main():
     app.add_handler(CommandHandler("onayvip", onayvip))
     app.add_handler(CommandHandler("onaypremium", onaypremium))
     app.add_handler(CallbackQueryHandler(button))
-
+    app.add_handler(CommandHandler("redvip", redvip))
+    app.add_handler(CommandHandler("redpremium", redpremium))
     # Botu başlat (Polling modunda en güvenli yol budur)
     print("Bot başarıyla başlatıldı...")
     app.run_polling()
