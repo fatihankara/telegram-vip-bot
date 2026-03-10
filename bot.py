@@ -65,7 +65,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     reply_markup = InlineKeyboardMarkup(keyboard)
 
-  welcome_text = """
+    welcome_text = """
 👑 BEYBİNUR PRIVÉ – HOŞ GELDİNİZ
 
 Beybinur’un en özel içeriklerine ve hiçbir yerde paylaşılmayan dev arşivine erişmek için doğru yerdesiniz.
