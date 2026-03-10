@@ -65,11 +65,27 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     reply_markup = InlineKeyboardMarkup(keyboard)
 
-    await update.message.reply_text(
-        "Üyelik satın almak için aşağıdaki butonları kullanın 👇",
-        reply_markup=reply_markup
-    )
+  welcome_text = """
+👑 BEYBİNUR PRIVÉ – HOŞ GELDİNİZ
 
+Beybinur’un en özel içeriklerine ve hiçbir yerde paylaşılmayan dev arşivine erişmek için doğru yerdesiniz.
+
+📍 ADIM ADIM ERİŞİM REHBERİ:
+1️⃣ PAKETİNİ SEÇ: Aşağıdaki VIP veya PREMIUM seçeneklerinden birini belirle.
+2️⃣ GÜVENLİ ÖDEME (Shopier): 'Satın Al' butonuna tıkla, Shopier üzerinden ödemeni güvenle tamamla.
+3️⃣ OTOMATİK ONAY: Ödemeden sonra bu bota dönüp 'Ödeme Yaptım' butonuna basman yeterli!
+
+🚀 SONUÇ:
+Sistemimiz Shopier siparişinizle eşleşmeyi saniyeler içinde yapar ve giriş linkiniz otomatik olarak buraya gönderilir.
+
+⚠️ DİKKAT: Shopier kaydı olmadan butonu suistimal edenler sistemden kalıcı olarak yasaklanır.
+"""
+
+    await update.message.reply_text(
+        welcome_text,
+        reply_markup=reply_markup,
+        parse_mode="Markdown"
+    )
 
 # --------- BUTON ---------
 
