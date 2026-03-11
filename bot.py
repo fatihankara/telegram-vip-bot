@@ -60,7 +60,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
   keyboard = [
         [InlineKeyboardButton("💎 VIP Üyelik (500 TL)", url="https://www.shopier.com/beybinurvip/44857425")],
         [InlineKeyboardButton("👑 PREMIUM Üyelik (2000 TL)", url="https://www.shopier.com/beybinurvip/44890199")],
-        [InlineKeyboardButton("🔥 BUGÜNE ÖZEL - İNDİRİMLİ (300 TL)", url="https://www.shopier.com/beybinurvip/45112407")],
+        [InlineKeyboardButton("🔥 BUGÜNE ÖZEL İNDİRİM (300 TL)", url="https://www.shopier.com/beybinurvip/45112407")],
         [InlineKeyboardButton("✅ Ödeme Yaptım", callback_data="odeme")]
     ]
 
@@ -68,13 +68,13 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     welcome_text = (
         "👑 BEYBİNUR PRIVÉ – HOŞ GELDİNİZ\n\n"
-        "Beybinur’un en özel içeriklerine ve hiçbir yerde paylaşılmayan dev arşivine erişmek için doğru yerdesiniz.\n\n"
+        "Beybinur’un en özel içeriklerine ve dev arşivine erişmek için doğru yerdesiniz.\n\n"
         "📍 ADIM ADIM ERİŞİM REHBERİ:\n"
-        "1️⃣ PAKETİNİ SEÇ: Aşağıdaki VIP veya PREMIUM seçeneklerinden birini belirle.\n"
-        "2️⃣ GÜVENLİ ÖDEME (Shopier): 'Satın Al' butonuna tıkla, Shopier üzerinden ödemeni güvenle tamamla.\n"
-        "3️⃣ OTOMATİK ONAY: Ödemeden sonra bu bota dönüp 'Ödeme Yaptım' butonuna basman yeterli!\n\n"
+        "1️⃣ PAKETİNİ SEÇ: Aşağıdaki VIP, PREMIUM veya BUGÜNE ÖZEL İNDİRİMLİ paketi seç.\n"
+        "2️⃣ GÜVENLİ ÖDEME (Shopier): 'Satın Al' tıkla, ödemeni güvenle tamamla.\n"
+        "3️⃣ OTOMATİK ONAY: Ödemeden sonra bu bota dönüp 'Ödeme Yaptım' butonuna bas!\n\n"
         "🚀 SONUÇ:\n"
-        "Sistemimiz Shopier siparişinizle eşleşmeyi saniyeler içinde yapar ve giriş linkiniz otomatik olarak gönderilir.\n\n"
+        "Sistemimiz Shopier siparişinizle eşleşmeyi saniyeler içinde yapar ve giriş linkiniz otomatik gönderilir.\n\n"
         "⚠️ DİKKAT: Shopier kaydı olmadan butonu suistimal edenler sistemden yasaklanır."
     )
 
