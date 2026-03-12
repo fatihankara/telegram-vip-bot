@@ -60,7 +60,6 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = [
         [InlineKeyboardButton("💎 VIP Üyelik (500 TL)", url="https://www.shopier.com/beybinurvip/44857425")],
         [InlineKeyboardButton("👑 PREMIUM Üyelik (2000 TL)", url="https://www.shopier.com/beybinurvip/44890199")],
-        [InlineKeyboardButton("🔥 BUGÜNE ÖZEL İNDİRİM (300 TL)", url="https://www.shopier.com/beybinurvip/45112407")],
         [InlineKeyboardButton("✅ Ödeme Yaptım", callback_data="odeme")]
     ]
 
