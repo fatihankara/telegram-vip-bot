@@ -57,25 +57,25 @@ def save_data(data):
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
-        keyboard = [
-            [InlineKeyboardButton("💎 VIP Üyelik (500 TL)", url="https://www.shopier.com/beybinurvip/44857425")],
-            [InlineKeyboardButton("👑 PREMIUM Üyelik (2000 TL)", url="https://www.shopier.com/beybinurvip/44890199")],
-            [InlineKeyboardButton("✅ Ödeme Yaptım", callback_data="odeme")]
-        ]
-    
-        reply_markup = InlineKeyboardMarkup(keyboard)
-    
-        welcome_text = (
-            "👑 *BEYBİNUR PRIVÉ – HOŞ GELDİNİZ*\n\n"
-            "Beybinur’un en özel içeriklerine ve dev arşivine erişmek için doğru yerdesiniz.\n\n"
-            "📍 *ADIM ADIM ERİŞİM REHBERİ:*\n"
-            "1️⃣ *PAKETİNİ SEÇ:* Aşağıdaki VIP veya PREMIUM seçeneklerinden birini belirle.\n"
-            "2️⃣ *GÜVENLİ ÖDEME (Shopier):* 'Satın Al' butonuna tıkla, ödemeni güvenle tamamla.\n"
-            "3️⃣ *OTOMATİK ONAY:* Ödemeden sonra bu bota dönüp *'Ödeme Yaptım'* butonuna bas!\n\n"
-            "🚀 *SONUÇ:*\n"
-            "Sistemimiz ödemeni saniyeler içinde onaylar ve giriş linkiniz otomatik gönderilir.\n\n"
-            "⚠️ *DİKKAT:* Shopier kaydı olmadan butonu suistimal edenler sistemden yasaklanır."
-        )
+       keyboard = [
+        [InlineKeyboardButton("💎 VIP Üyelik (500 TL)", url="https://www.shopier.com/beybinurvip/44857425")],
+        [InlineKeyboardButton("👑 PREMIUM Üyelik (2000 TL)", url="https://www.shopier.com/beybinurvip/44890199")],
+        [InlineKeyboardButton("✅ Ödeme Yaptım", callback_data="odeme")]
+    ]
+
+    reply_markup = InlineKeyboardMarkup(keyboard)
+
+    welcome_text = (
+        "👑 BEYBİNUR PRIVÉ – HOŞ GELDİNİZ\n\n"
+        "Beybinur’un en özel içeriklerine erişmek için doğru yerdesiniz.\n\n"
+        "📍 ADIM ADIM ERİŞİM REHBERİ:\n"
+        "1️⃣ PAKETİNİ SEÇ: VIP veya PREMIUM seçeneklerinden birini belirle.\n"
+        "2️⃣ GÜVENLİ ÖDEME: Shopier üzerinden ödemeni tamamla.\n"
+        "3️⃣ OTOMATİK ONAY: Bu bota dönüp 'Ödeme Yaptım' butonuna bas!\n\n"
+        "🚀 Sistemimiz ödemeni onaylar ve linkini anında gönderir."
+    )
+
+    await update.message.reply_text(text=welcome_text, reply_markup=reply_markup, parse_mode="Markdown")
 
     await update.message.reply_text(
         text=welcome_text,
