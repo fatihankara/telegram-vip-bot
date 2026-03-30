@@ -8,22 +8,20 @@ import asyncio
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandler, ContextTypes
 
-# --------- FLASK (Botu Canlı Tutma / UptimeRobot İçin) ---------
+# --------- FLASK (UptimeRobot İçin) ---------
 web = Flask(__name__)
 
 @web.route('/')
 def home(): 
-    return "Bot Aktif"
+    return "Bot Aktif ve İzleniyor"
 
 def run():
-    # Render'ın atadığı portu alıyoruz, bulamazsa 10000 kullanıyoruz.
     port = int(os.environ.get("PORT", 10000))
-    # use_reloader=False Render ve Threading çakışmasını önler.
     web.run(host="0.0.0.0", port=port, debug=False, use_reloader=False)
 
 def keep_alive():
     t = threading.Thread(target=run)
-    t.daemon = True # Ana program durunca bunu da durdurur
+    t.daemon = True
     t.start()
 
 # --------- AYARLAR ---------
@@ -35,7 +33,7 @@ PREMIUM_CHANNEL = -1003883042358
 ELITE_CHANNEL = -1001234567890 
 
 DATA_FILE = "uyeler.json"
-SURE = 30 * 24 * 60 * 60
+SURE = 30 * 24 * 60 * 60 # 30 Günlük saniye
 
 # --------- VERİ YÖNETİMİ ---------
 def load_data():
@@ -48,7 +46,7 @@ def load_data():
 def save_data(data):
     with open(DATA_FILE, "w") as f: json.dump(data, f)
 
-# --------- ANA MENÜ (START) ---------
+# --------- ANA MENÜ ---------
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = [
         [InlineKeyboardButton("⭐ VIP (80 TL) - 30 GÜN", url="https://www.shopier.com/beybinurvip/45692063")],
@@ -68,7 +66,6 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
     await update.message.reply_text(text=welcome_text, reply_markup=reply_markup, parse_mode="HTML")
 
-# --------- BUTON (BİLDİRİM) ---------
 async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
@@ -79,19 +76,38 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f"<b>RED:</b>\n<code>/red {user.id}</code>"
     )
     await context.bot.send_message(chat_id=ADMIN_ID, text=admin_msg, parse_mode="HTML")
-    await query.edit_message_text("✅ Bildiriminiz iletildi. Kontrol sonrası linkiniz buraya gönderilecek.")
+    await query.edit_message_text("✅ Bildiriminiz iletildi. Kontrol sonrası işleminiz tamamlanacaktır.")
 
-# --------- ONAY VE RED ---------
+# --------- ONAY VE SÜRE UZATMA ---------
 async def onay_genel(update, context, kanal_id, paket):
     if update.effective_user.id != ADMIN_ID: return
+    if not context.args: return
     try:
-        user_id = int(context.args[0])
-        invite = await context.bot.create_chat_invite_link(chat_id=kanal_id, member_limit=1)
-        await context.bot.send_message(chat_id=user_id, text=f"🎉 <b>{paket.upper()} Üyeliğiniz Onaylandı!</b>\n\nLink: {invite.invite_link}", parse_mode="HTML")
+        user_id = str(context.args[0])
         data = load_data()
-        data[str(user_id)] = {"bitis": int(time.time()) + SURE, "kanal": paket}
+        simdi = int(time.time())
+
+        # SÜRE HESABI: Üye zaten varsa bitişin üzerine ekle, yoksa şimdiden başlat
+        eski_bitis = data.get(user_id, {}).get("bitis", simdi)
+        yeni_bitis = max(eski_bitis, simdi) + SURE
+
+        # Üyeye özel link oluştur
+        invite = await context.bot.create_chat_invite_link(chat_id=kanal_id, member_limit=1)
+        
+        # Veriyi kaydet
+        data[user_id] = {"bitis": yeni_bitis, "kanal": paket, "hatirlatildi": False}
         save_data(data)
-        await update.message.reply_text(f"✅ {user_id} onaylandı.")
+
+        # Kullanıcıya mesaj gönder
+        await context.bot.send_message(
+            chat_id=int(user_id), 
+            text=f"🎉 <b>{paket.upper()} Üyeliğiniz Onaylandı!</b>\n\n"
+                 f"📅 Yeni Bitiş Tarihi: {time.ctime(yeni_bitis)}\n"
+                 f"🔗 Giriş Linki: {invite.invite_link}\n\n"
+                 f"<i>(Eğer gruptaysanız linke tıklamanıza gerek yoktur, süreniz otomatik uzatılmıştır.)</i>",
+            parse_mode="HTML"
+        )
+        await update.message.reply_text(f"✅ {user_id} için süre {paket} olarak uzatıldı/başlatıldı.")
     except Exception as e:
         await update.message.reply_text(f"Hata: {e}")
 
@@ -101,6 +117,7 @@ async def onayelite(u, c): await onay_genel(u, c, ELITE_CHANNEL, "elite")
 
 async def red(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_user.id != ADMIN_ID: return
+    if not context.args: return
     try:
         user_id = int(context.args[0])
         await context.bot.send_message(chat_id=user_id, text="❌ <b>Ödemeniz Onaylanmadı.</b> Lütfen işlemi kontrol edip tekrar deneyin.", parse_mode="HTML")
@@ -108,38 +125,52 @@ async def red(update: Update, context: ContextTypes.DEFAULT_TYPE):
     except:
         await update.message.reply_text("Kullanıcıya ulaşılamadı.")
 
-# --------- SÜRE KONTROL ---------
+# --------- SÜRE VE HATIRLATMA KONTROLÜ ---------
 async def kontrol(application):
     while True:
         data = load_data()
         simdi = int(time.time())
         degisti = False
+        bir_gun = 24 * 60 * 60 # 24 saat
+        
         for user_id in list(data.keys()):
-            if simdi > data[user_id]["bitis"]:
-                k_id = VIP_CHANNEL if data[user_id]["kanal"] == "vip" else (PREMIUM_CHANNEL if data[user_id]["kanal"] == "premium" else ELITE_CHANNEL)
+            kullanici = data[user_id]
+            kalan_saniye = kullanici["bitis"] - simdi
+
+            # 24 Saat Kala Hatırlatma Mesajı
+            if 0 < kalan_saniye <= bir_gun and not kullanici.get("hatirlatildi", False):
+                try:
+                    await application.bot.send_message(
+                        chat_id=int(user_id),
+                        text="⚠️ <b>Abonelik Uyarısı!</b>\n\nÜyeliğinizin bitmesine 24 saatten az kaldı. Kesinti yaşamamak için ana menüden paket yenileyebilirsiniz.",
+                        parse_mode="HTML"
+                    )
+                    kullanici["hatirlatildi"] = True
+                    degisti = True
+                except: pass
+
+            # Süre Tam Dolunca Çıkarma
+            elif kalan_saniye <= 0:
+                k_id = VIP_CHANNEL if kullanici["kanal"] == "vip" else (PREMIUM_CHANNEL if kullanici["kanal"] == "premium" else ELITE_CHANNEL)
                 try:
                     await application.bot.ban_chat_member(k_id, int(user_id))
                     await application.bot.unban_chat_member(k_id, int(user_id))
-                    await application.bot.send_message(chat_id=int(user_id), text="❌ Üyeliğinizin süresi doldu.")
+                    await application.bot.send_message(chat_id=int(user_id), text="❌ Üyeliğiniz doldu ve gruptan çıkarıldınız. Tekrar katılmak için /start")
                 except: pass
                 del data[user_id]
                 degisti = True
+
         if degisti: save_data(data)
         await asyncio.sleep(3600)
 
-# --------- ANA ÇALIŞTIRICI ---------
+# --------- BAŞLATICI ---------
 async def post_init(application):
-    # Bu fonksiyon bot başladığında süreli kontrolü güvenli şekilde başlatır.
     asyncio.create_task(kontrol(application))
 
 def main():
-    # 1. Flask sunucusunu başlat (UptimeRobot için)
     keep_alive()
-    
-    # 2. Botu kur ve kontrol görevini bağla
     app = ApplicationBuilder().token(TOKEN).post_init(post_init).build()
     
-    # 3. Handler'ları (Komutları) ekle
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("onayvip", onayvip))
     app.add_handler(CommandHandler("onaypremium", onaypremium))
@@ -147,9 +178,7 @@ def main():
     app.add_handler(CommandHandler("red", red))
     app.add_handler(CallbackQueryHandler(button))
     
-    print("Sistem Hazır! UptimeRobot linkini bekliyor...")
-    
-    # 4. Botu çalıştır
+    print("Sistem Aktif ve Hatırlatıcı Devrede...")
     app.run_polling()
 
 if __name__ == '__main__':
