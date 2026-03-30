@@ -1,4 +1,4 @@
- from flask import Flask
+from flask import Flask
 import threading
 import time
 import json
@@ -8,7 +8,7 @@ import asyncio
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandler, ContextTypes
 
-# --------- FLASK (Canlı Tutma) ---------
+# --------- FLASK (Botu Canlı Tutma) ---------
 web = Flask(__name__)
 @web.route('/')
 def home(): return "Bot Aktif"
@@ -137,5 +137,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-==> Exited with status 1
-==> Common ways to troubleshoot your deploy: https://render.com/docs/troubleshooting-deploys
