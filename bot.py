@@ -1,4 +1,4 @@
-from flask import Flask
+ from flask import Flask
 import threading
 import time
 import json
@@ -8,10 +8,10 @@ import asyncio
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandler, ContextTypes
 
-# --------- FLASK (Render için botu canlı tutar) ---------
+# --------- FLASK (Canlı Tutma) ---------
 web = Flask(__name__)
 @web.route('/')
-def home(): return "Bot aktif ve satışa hazır!"
+def home(): return "Bot Aktif"
 
 def run(): web.run(host="0.0.0.0", port=10000)
 def keep_alive():
@@ -26,10 +26,10 @@ ADMIN_ID = 7950288597
 
 VIP_CHANNEL = -1003784644347
 PREMIUM_CHANNEL = -1003883042358
-ELITE_CHANNEL = -1001234567890  # <-- BURAYA ELITE KANAL ID'SİNİ YAZIN!
+ELITE_CHANNEL = -1001234567890 # <-- ELITE kanal ID'sini buraya yaz!
 
 DATA_FILE = "uyeler.json"
-SURE = 30 * 24 * 60 * 60  # 30 Günlük Süre (Saniye cinsinden)
+SURE = 30 * 24 * 60 * 60
 
 # --------- VERİ YÖNETİMİ ---------
 def load_data():
@@ -42,92 +42,100 @@ def save_data(data):
 
 # --------- ANA MENÜ (START) ---------
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    # GÜNCEL PAKETLER VE SHOPIER LİNKLERİ
     keyboard = [
         [InlineKeyboardButton("⭐ VIP (80 TL) - 30 GÜN", url="https://www.shopier.com/beybinurvip/45692063")],
         [InlineKeyboardButton("🌟 PREMIUM (120 TL) - 30 GÜN", url="https://www.shopier.com/beybinurvip/45692092")],
         [InlineKeyboardButton("👑 ELITE (150 TL) - 30 GÜN", url="https://www.shopier.com/beybinurvip/45692110")],
         [InlineKeyboardButton("✅ ÖDEME YAPTIM", callback_data="odeme")]
     ]
-
     reply_markup = InlineKeyboardMarkup(keyboard)
-
     welcome_text = (
         "<b>👑 BEYBİNUR PRIVÉ – HOŞ GELDİNİZ</b>\n\n"
-        "Beybinur'un en özel içeriklerine erişmek için size en uygun <b>Aylık Üyelik</b> paketini seçebilirsiniz:\n\n"
+        "Size en uygun <b>Aylık Üyelik</b> paketini seçebilirsiniz:\n\n"
         "📍 <b>30 GÜNLÜK PAKET SEÇENEKLERİ:</b>\n"
-        "• <b>VIP Paket:</b> Günlük 1 Foto — <b>80 TL / Ay</b>\n"
-        "• <b>PREMIUM Paket:</b> Günlük 3 Foto — <b>120 TL / Ay</b>\n"
-        "• <b>ELITE Paket:</b> Günlük 5 Foto + 1 Video — <b>150 TL / Ay</b>\n\n"
-        "⚠️ <i>Not: Üyelikler 30 gün geçerlidir. Süre sonunda sistem otomatik olarak gruptan çıkarır.</i>\n\n"
-        "🚀 <i>Ödemenizi yapın ve ardından 'Ödeme Yaptım' butonuna basın.</i>"
+        "• <b>VIP:</b> Günlük 1 Foto — <b>80 TL</b>\n"
+        "• <b>PREMIUM:</b> Günlük 3 Foto — <b>120 TL</b>\n"
+        "• <b>ELITE:</b> Günlük 5 Foto + 1 Video — <b>150 TL</b>\n\n"
+        "⚠️ <i>Not: Üyelikler 30 gün geçerlidir. Süre sonunda sistem otomatik olarak gruptan çıkarır.</i>"
     )
-
     await update.message.reply_text(text=welcome_text, reply_markup=reply_markup, parse_mode="HTML")
 
-# --------- BUTON (ÖDEME BİLDİRİMİ) ---------
+# --------- BUTON (BİLDİRİM) ---------
 async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
     user = query.from_user
-
     admin_msg = (
-        f"💰 <b>YENİ ÖDEME BİLDİRİMİ!</b>\n\n"
-        f"👤 Kullanıcı: @{user.username}\n"
-        f"🆔 ID: <code>{user.id}</code>\n\n"
-        f"<b>✅ ONAY KOMUTLARI:</b>\n"
-        f"<code>/onayvip {user.id}</code>\n"
-        f"<code>/onaypremium {user.id}</code>\n"
-        f"<code>/onayelite {user.id}</code>\n\n"
-        f"<b>❌ REDDETME:</b>\n"
-        f"<code>/red {user.id}</code>"
+        f"💰 <b>YENİ ÖDEME BİLDİRİMİ!</b>\n\n👤: @{user.username}\n🆔: <code>{user.id}</code>\n\n"
+        f"<b>ONAY:</b>\n<code>/onayvip {user.id}</code>\n<code>/onaypremium {user.id}</code>\n<code>/onayelite {user.id}</code>\n\n"
+        f"<b>RED:</b>\n<code>/red {user.id}</code>"
     )
-
     await context.bot.send_message(chat_id=ADMIN_ID, text=admin_msg, parse_mode="HTML")
-    await query.edit_message_text("✅ Bildiriminiz iletildi. Kontrol edildikten sonra linkiniz buraya otomatik olarak gönderilecektir.")
+    await query.edit_message_text("✅ Bildiriminiz iletildi. Kontrol sonrası linkiniz buraya gönderilecek.")
 
-# --------- ONAY MEKANİZMASI ---------
+# --------- ONAY VE RED ---------
 async def onay_genel(update, context, kanal_id, paket):
     if update.effective_user.id != ADMIN_ID: return
     try:
         user_id = int(context.args[0])
         invite = await context.bot.create_chat_invite_link(chat_id=kanal_id, member_limit=1)
-        
-        await context.bot.send_message(
-            chat_id=user_id,
-            text=f"🎉 <b>Tebrikler! 30 Günlük {paket.upper()} Üyeliğiniz Onaylandı.</b>\n\nKatılım Linki:\n{invite.invite_link}",
-            parse_mode="HTML"
-        )
-        
+        await context.bot.send_message(chat_id=user_id, text=f"🎉 <b>{paket.upper()} Üyeliğiniz Onaylandı!</b>\n\nLink: {invite.invite_link}", parse_mode="HTML")
         data = load_data()
         data[str(user_id)] = {"bitis": int(time.time()) + SURE, "kanal": paket}
         save_data(data)
-        await update.message.reply_text(f"✅ {user_id} için {paket} onayı verildi ve link gönderildi.")
+        await update.message.reply_text(f"✅ {user_id} onaylandı.")
     except Exception as e:
-        await update.message.reply_text(f"⚠️ Hata: Kullanıcı botu engellemiş olabilir veya ID hatalı.\nDetay: {e}")
+        await update.message.reply_text(f"Hata: {e}")
 
 async def onayvip(u, c): await onay_genel(u, c, VIP_CHANNEL, "vip")
 async def onaypremium(u, c): await onay_genel(u, c, PREMIUM_CHANNEL, "premium")
 async def onayelite(u, c): await onay_genel(u, c, ELITE_CHANNEL, "elite")
 
-# --------- REDDETME ---------
 async def red(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_user.id != ADMIN_ID: return
     try:
         user_id = int(context.args[0])
-        await context.bot.send_message(
-            chat_id=user_id,
-            text="❌ <b>Ödemeniz Onaylanmadı</b>\n\nSistemde geçerli bir ödeme kaydı bulunamadı. Lütfen işlemi kontrol edip tekrar deneyin.",
-            parse_mode="HTML"
-        )
-        await update.message.reply_text(f"🚫 {user_id} ID'li kullanıcıya ret mesajı gönderildi.")
-    except Exception as e:
-        await update.message.reply_text(f"⚠️ Hata: Kullanıcıya mesaj gitmedi. (Botu engellemiş olabilir)")
+        await context.bot.send_message(chat_id=user_id, text="❌ <b>Ödemeniz Onaylanmadı.</b> Lütfen işlemi kontrol edip tekrar deneyin.", parse_mode="HTML")
+        await update.message.reply_text(f"🚫 {user_id} reddedildi.")
+    except:
+        await update.message.reply_text("Kullanıcıya ulaşılamadı.")
 
-# --------- SÜRE KONTROL (OTOMATİK ÇIKARMA) ---------
+# --------- SÜRE KONTROL ---------
 async def kontrol(application):
     while True:
         data = load_data()
         simdi = int(time.time())
         degisti = False
-        for user_id in list(
+        for user_id in list(data.keys()):
+            if simdi > data[user_id]["bitis"]:
+                k_id = VIP_CHANNEL if data[user_id]["kanal"] == "vip" else (PREMIUM_CHANNEL if data[user_id]["kanal"] == "premium" else ELITE_CHANNEL)
+                try:
+                    await application.bot.ban_chat_member(k_id, int(user_id))
+                    await application.bot.unban_chat_member(k_id, int(user_id))
+                    await application.bot.send_message(chat_id=int(user_id), text="❌ Üyeliğinizin süresi doldu.")
+                except: pass
+                del data[user_id]
+                degisti = True
+        if degisti: save_data(data)
+        await asyncio.sleep(3600)
+
+# --------- ANA ÇALIŞTIRICI ---------
+def main():
+    app = ApplicationBuilder().token(TOKEN).build()
+    loop = asyncio.get_event_loop()
+    loop.create_task(kontrol(app))
+    
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(CommandHandler("onayvip", onayvip))
+    app.add_handler(CommandHandler("onaypremium", onaypremium))
+    app.add_handler(CommandHandler("onayelite", onayelite))
+    app.add_handler(CommandHandler("red", red))
+    app.add_handler(CallbackQueryHandler(button))
+    
+    print("Bot başlatılıyor...")
+    app.run_polling()
+
+if __name__ == '__main__':
+    main()
+==> Exited with status 1
+==> Common ways to troubleshoot your deploy: https://render.com/docs/troubleshooting-deploys
