@@ -25,7 +25,7 @@ def keep_alive():
     t.start()
 
 # --------- AYARLAR ---------
-TOKEN = "8782987338:AAF4QQsH9pwk5_d1F0sLBzHyPrJBXOQsfGw"
+TOKEN = "8782987338:AAEe7o2XclMkzD-AVa-nCG9Xawg7ouX2aCw"
 ADMIN_ID = 7950288597
 
 VIP_CHANNEL = -1003784644347
