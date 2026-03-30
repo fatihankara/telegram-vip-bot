@@ -10,15 +10,20 @@ from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandle
 
 # --------- FLASK (Botu Canlı Tutma) ---------
 web = Flask(__name__)
-@web.route('/')
-def home(): return "Bot Aktif"
 
-def run(): web.run(host="0.0.0.0", port=10000)
+@web.route('/')
+def home(): 
+    return "Bot Aktif"
+
+def run():
+    # Render'ın atadığı portu alıyoruz, bulamazsa 10000 kullanıyoruz.
+    port = int(os.environ.get("PORT", 10000))
+    web.run(host="0.0.0.0", port=port)
+
 def keep_alive():
     t = threading.Thread(target=run)
+    t.daemon = True # Ana program durunca bunu da durdurur
     t.start()
-
-keep_alive()
 
 # --------- AYARLAR ---------
 TOKEN = "8782987338:AAF4QQsH9pwk5_d1F0sLBzHyPrJBXOQsfGw"
@@ -26,7 +31,7 @@ ADMIN_ID = 7950288597
 
 VIP_CHANNEL = -1003784644347
 PREMIUM_CHANNEL = -1003883042358
-ELITE_CHANNEL = -1001234567890 # <-- ELITE kanal ID'sini buraya yaz!
+ELITE_CHANNEL = -1001234567890 
 
 DATA_FILE = "uyeler.json"
 SURE = 30 * 24 * 60 * 60
@@ -34,7 +39,9 @@ SURE = 30 * 24 * 60 * 60
 # --------- VERİ YÖNETİMİ ---------
 def load_data():
     if os.path.exists(DATA_FILE):
-        with open(DATA_FILE, "r") as f: return json.load(f)
+        try:
+            with open(DATA_FILE, "r") as f: return json.load(f)
+        except: return {}
     return {}
 
 def save_data(data):
@@ -121,7 +128,12 @@ async def kontrol(application):
 
 # --------- ANA ÇALIŞTIRICI ---------
 def main():
+    # Flask sunucusunu başlat
+    keep_alive()
+    
     app = ApplicationBuilder().token(TOKEN).build()
+    
+    # Süre kontrol görevini başlat
     loop = asyncio.get_event_loop()
     loop.create_task(kontrol(app))
     
