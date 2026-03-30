@@ -8,7 +8,7 @@ import asyncio
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandler, ContextTypes
 
-# --------- FLASK (Botu Canlı Tutma) ---------
+# --------- FLASK (Botu Canlı Tutma / UptimeRobot İçin) ---------
 web = Flask(__name__)
 
 @web.route('/')
@@ -18,7 +18,8 @@ def home():
 def run():
     # Render'ın atadığı portu alıyoruz, bulamazsa 10000 kullanıyoruz.
     port = int(os.environ.get("PORT", 10000))
-    web.run(host="0.0.0.0", port=port)
+    # use_reloader=False Render ve Threading çakışmasını önler.
+    web.run(host="0.0.0.0", port=port, debug=False, use_reloader=False)
 
 def keep_alive():
     t = threading.Thread(target=run)
@@ -127,16 +128,18 @@ async def kontrol(application):
         await asyncio.sleep(3600)
 
 # --------- ANA ÇALIŞTIRICI ---------
+async def post_init(application):
+    # Bu fonksiyon bot başladığında süreli kontrolü güvenli şekilde başlatır.
+    asyncio.create_task(kontrol(application))
+
 def main():
-    # Flask sunucusunu başlat
+    # 1. Flask sunucusunu başlat (UptimeRobot için)
     keep_alive()
     
-    app = ApplicationBuilder().token(TOKEN).build()
+    # 2. Botu kur ve kontrol görevini bağla
+    app = ApplicationBuilder().token(TOKEN).post_init(post_init).build()
     
-    # Süre kontrol görevini başlat
-    loop = asyncio.get_event_loop()
-    loop.create_task(kontrol(app))
-    
+    # 3. Handler'ları (Komutları) ekle
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("onayvip", onayvip))
     app.add_handler(CommandHandler("onaypremium", onaypremium))
@@ -144,7 +147,9 @@ def main():
     app.add_handler(CommandHandler("red", red))
     app.add_handler(CallbackQueryHandler(button))
     
-    print("Bot başlatılıyor...")
+    print("Sistem Hazır! UptimeRobot linkini bekliyor...")
+    
+    # 4. Botu çalıştır
     app.run_polling()
 
 if __name__ == '__main__':
