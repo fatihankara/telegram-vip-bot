@@ -8,7 +8,7 @@ import asyncio
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, ChatPermissions
 from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandler, ContextTypes, MessageHandler, filters
 
-# --------- FLASK (UptimeRobot İçin) ---------
+# --------- FLASK (UptimeRobot & Render Sağlık Kontrolü) ---------
 web = Flask(__name__)
 
 @web.route('/')
@@ -16,8 +16,9 @@ def home():
     return "Bot Aktif ve İzleniyor"
 
 def run():
+    # Render için en stabil port yapılandırması
     port = int(os.environ.get("PORT", 10000))
-    web.run(host="0.0.0.0", port=port, debug=False, use_reloader=False)
+    web.run(host="0.0.0.0", port=port)
 
 def keep_alive():
     t = threading.Thread(target=run)
@@ -32,13 +33,13 @@ VIP_CHANNEL = -1003784644347
 PREMIUM_CHANNEL = -1003883042358
 ELITE_CHANNEL = -1001234567890 
 
-# --- GÜNCELLENMİŞ YENİ GRUP AYARLARI ---
+# --- GRUP AYARLARI (SENİN VERDİĞİN GÜNCEL BİLGİLER) ---
 FREE_GROUP_ID = -1003365017619  
 FREE_GROUP_LINK = "https://t.me/+MJzQ_ypSthEyYjA8" 
 
 DATA_FILE = "uyeler.json"
 COUNTER_FILE = "mesaj_sayaci.json" 
-SURE = 30 * 24 * 60 * 60 
+SURE = 30 * 24 * 60 * 60 # 30 Gün
 
 # --------- VERİ YÖNETİMİ ---------
 def load_data(file=DATA_FILE):
@@ -82,8 +83,7 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if query.data == "ucretsiz_bilgi":
         info_text = (
             "<b>📢 Beybi Nur Bilgilendirme Grubu</b>\n\n"
-            "Sistemimizin işleyişini görmek, güncel paket detaylarını öğrenmek ve "
-            "aklınızdaki soruları sormak için grubumuza katılabilirsiniz.\n\n"
+            "Sistemimizin işleyişini görmek ve soru sormak için grubumuza katılabilirsiniz.\n\n"
             "⚠️ <b>NOT:</b> Grupta toplam <b>5 adet mesaj/soru hakkınız</b> bulunmaktadır. Hakkınız dolduğunda sistem sizi otomatik olarak susturacaktır.\n\n"
             f"🔗 <a href='{FREE_GROUP_LINK}'>GRUBA GİRİŞ İÇİN TIKLAYIN</a>"
         )
@@ -98,7 +98,7 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await context.bot.send_message(chat_id=ADMIN_ID, text=admin_msg, parse_mode="HTML")
         await query.edit_message_text("✅ Bildiriminiz iletildi. Kontrol sonrası işleminiz tamamlanacaktır.")
 
-# --------- MESAJ SINIRLAMA (YENİ GRUP İÇİN) ---------
+# --------- MESAJ SINIRLAMA (BİLGİLENDİRME GRUBU) ---------
 async def mesaj_kontrol(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not update.message or not update.message.text: return
     if update.message.text.startswith('/'): return 
@@ -106,15 +106,13 @@ async def mesaj_kontrol(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
     user_id = str(update.effective_user.id)
 
-    # Sadece Yeni Bilgilendirme Grubundaki mesajları sayalım
+    # Sadece Bilgilendirme Grubunda sayım yap
     if chat_id != FREE_GROUP_ID: return
     if int(user_id) == ADMIN_ID: return 
 
-    # Ücretli üyeleri susturmadan muaf tut
     aktif_uyeler = load_data()
     if user_id in aktif_uyeler: return
 
-    # Mesaj sayacı kontrolü
     sayaclar = load_data(COUNTER_FILE)
     current_count = sayaclar.get(user_id, 0)
 
@@ -123,7 +121,6 @@ async def mesaj_kontrol(update: Update, context: ContextTypes.DEFAULT_TYPE):
         sayaclar[user_id] = current_count
         save_data(sayaclar, COUNTER_FILE)
     else:
-        # 5 Mesaj dolunca SUSTUR (Mute)
         try:
             await context.bot.restrict_chat_member(
                 chat_id=FREE_GROUP_ID,
@@ -132,7 +129,7 @@ async def mesaj_kontrol(update: Update, context: ContextTypes.DEFAULT_TYPE):
             )
             await update.message.reply_text(
                 f"⚠️ @{update.effective_user.username} <b>Ücretsiz mesaj hakkınız dolmuştur!</b>\n\n"
-                "Günlük içerik paylaşımlarımıza ve tam arşive ulaşmak için VIP paketlerimizi ana menüden inceleyebilirsiniz.",
+                "VIP paketlerimizi ana menüden inceleyerek sınırsız erişim sağlayabilirsiniz.",
                 parse_mode="HTML"
             )
         except Exception as e:
@@ -152,7 +149,7 @@ async def onay_genel(update, context, kanal_id, paket):
         save_data(data)
         await context.bot.send_message(
             chat_id=int(user_id), 
-            text=f"🎉 <b>{paket.upper()} Üyeliğiniz Onaylandı!</b>\n\n📅 Bitiş Tarihi: {time.ctime(yeni_bitis)}\n🔗 Giriş Linki: {invite.invite_link}",
+            text=f"🎉 <b>{paket.upper()} Üyeliğiniz Onaylandı!</b>\n\n📅 Bitiş: {time.ctime(yeni_bitis)}\n🔗 Link: {invite.invite_link}",
             parse_mode="HTML"
         )
         await update.message.reply_text(f"✅ {user_id} onaylandı.")
@@ -182,7 +179,7 @@ async def kontrol(application):
                 try:
                     await application.bot.ban_chat_member(k_id, int(user_id))
                     await application.bot.unban_chat_member(k_id, int(user_id))
-                    await application.bot.send_message(chat_id=int(user_id), text="❌ Üyeliğiniz doldu. Tekrar katılmak için /start")
+                    await application.bot.send_message(chat_id=int(user_id), text="❌ Üyeliğiniz doldu. Yenilemek için /start")
                 except: pass
                 del data[user_id]
                 degisti = True
@@ -193,7 +190,9 @@ async def post_init(application):
     asyncio.create_task(kontrol(application))
 
 def main():
+    # Flask'ı ayrı bir thread'de başlat
     keep_alive()
+    
     app = ApplicationBuilder().token(TOKEN).post_init(post_init).build()
     
     app.add_handler(CommandHandler("start", start))
@@ -204,7 +203,7 @@ def main():
     app.add_handler(CallbackQueryHandler(button))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, mesaj_kontrol))
     
-    print("Beybi Nur Bot Yeni Grup ile Aktif...")
+    print("Sistem Aktif...")
     app.run_polling()
 
 if __name__ == '__main__':
