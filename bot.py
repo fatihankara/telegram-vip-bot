@@ -32,13 +32,13 @@ VIP_CHANNEL = -1003784644347
 PREMIUM_CHANNEL = -1003883042358
 ELITE_CHANNEL = -1001234567890 
 
-# --- GÜNCELLENMİŞ BİLGİLENDİRME GRUBU AYARLARI ---
-FREE_GROUP_ID = -1002361661559  
-FREE_GROUP_LINK = "https://t.me/Beybinurduyuru" 
+# --- GÜNCELLENMİŞ YENİ GRUP AYARLARI ---
+FREE_GROUP_ID = -1003365017619  
+FREE_GROUP_LINK = "https://t.me/+MJzQ_ypSthEyYjA8" 
 
 DATA_FILE = "uyeler.json"
 COUNTER_FILE = "mesaj_sayaci.json" 
-SURE = 30 * 24 * 60 * 60 # 30 Günlük saniye
+SURE = 30 * 24 * 60 * 60 
 
 # --------- VERİ YÖNETİMİ ---------
 def load_data(file=DATA_FILE):
@@ -98,7 +98,7 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await context.bot.send_message(chat_id=ADMIN_ID, text=admin_msg, parse_mode="HTML")
         await query.edit_message_text("✅ Bildiriminiz iletildi. Kontrol sonrası işleminiz tamamlanacaktır.")
 
-# --------- MESAJ SINIRLAMA (BİLGİLENDİRME GRUBU İÇİN) ---------
+# --------- MESAJ SINIRLAMA (YENİ GRUP İÇİN) ---------
 async def mesaj_kontrol(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not update.message or not update.message.text: return
     if update.message.text.startswith('/'): return 
@@ -106,7 +106,7 @@ async def mesaj_kontrol(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
     user_id = str(update.effective_user.id)
 
-    # Sadece Bilgilendirme Grubundaki mesajları sayalım
+    # Sadece Yeni Bilgilendirme Grubundaki mesajları sayalım
     if chat_id != FREE_GROUP_ID: return
     if int(user_id) == ADMIN_ID: return 
 
@@ -204,7 +204,7 @@ def main():
     app.add_handler(CallbackQueryHandler(button))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, mesaj_kontrol))
     
-    print("Beybi Nur Bot Aktif ve Bilgilendirme Grubu Takipte...")
+    print("Beybi Nur Bot Yeni Grup ile Aktif...")
     app.run_polling()
 
 if __name__ == '__main__':
