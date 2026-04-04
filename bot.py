@@ -35,7 +35,7 @@ ADMIN_ID = 7950288597
 
 VIP_CHANNEL = -1003784644347
 PREMIUM_CHANNEL = -1003883042358
-ELITE_CHANNEL = -1003705186491 # Elite ID düzeltildi
+ELITE_CHANNEL = -1003705186491 
 
 FREE_GROUP_ID = -1003365017619  
 FREE_GROUP_LINK = "https://t.me/+MJzQ_ypSthEyYjA8" 
@@ -88,7 +88,7 @@ async def button(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "<b>📢 Beybi Nur Bilgilendirme Grubu</b>\n\n"
             "Soru sormak için grubumuza katılabilirsiniz.\n"
             "⚠️ <b>NOT:</b> Grupta toplam <b>5 adet mesaj</b> hakkınız vardır.\n\n"
-            f"🔗 <a href='{FREE_GROUP_LINK}'>GRUBA GİRİŞ İÇİN TIKLAYIN</a>"
+            "🔗 <a href='{FREE_GROUP_LINK}'>GRUBA GİRİŞ İÇİN TIKLAYIN</a>"
         )
         await query.message.reply_text(text=info_text, parse_mode="HTML")
 
@@ -107,26 +107,30 @@ async def mesaj_kontrol(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.message.text.startswith('/'): return 
     
     chat_id = update.effective_chat.id
-    user_id = str(update.effective_user.id)
+    # update.effective_user.id anonim mesajlarda None gelebilir, o yüzden korumalı alıyoruz
+    user_id_val = update.effective_user.id if update.effective_user else None
+    user_id_str = str(user_id_val) if user_id_val else ""
 
-    if chat_id != FREE_GROUP_ID or int(user_id) == ADMIN_ID: return
+    # MUAFİYET: Sadece belirlenen grupta çalış. Admin ID ise veya Anonim Yönetici (sender_chat) ise engelleme.
+    if chat_id != FREE_GROUP_ID or user_id_val == ADMIN_ID or update.message.sender_chat:
+        return
 
     # Eğer ücretli üyeyse sınırı kaldır
     aktif_uyeler = load_data()
-    if user_id in aktif_uyeler: return
+    if user_id_str in aktif_uyeler: return
 
     sayaclar = load_data(COUNTER_FILE)
-    current_count = sayaclar.get(user_id, 0)
+    current_count = sayaclar.get(user_id_str, 0)
 
     if current_count < 5:
         current_count += 1
-        sayaclar[user_id] = current_count
+        sayaclar[user_id_str] = current_count
         save_data(sayaclar, COUNTER_FILE)
     else:
         try:
             await context.bot.restrict_chat_member(
                 chat_id=FREE_GROUP_ID,
-                user_id=int(user_id),
+                user_id=user_id_val,
                 permissions=ChatPermissions(can_send_messages=False)
             )
             await update.message.reply_text(f"⚠️ @{update.effective_user.username} Mesaj hakkınız doldu!")
@@ -203,7 +207,7 @@ def main():
     app.add_handler(CallbackQueryHandler(button))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, mesaj_kontrol))
     
-    app.run_polling(drop_pending_updates=True) # Bot açılırken birikmiş mesajları temizler
+    app.run_polling(drop_pending_updates=True) 
 
 if __name__ == '__main__':
     main()
